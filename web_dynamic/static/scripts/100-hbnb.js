@@ -2,8 +2,13 @@
 $(document).ready(function () {
   // Initialize an empty object to store selected amenities
   const amenities = {};
+  const stateIds = {};
+  const cityIds = {};
+  const $divAmenities = $('div.amenities').find('li input:checkbox');
+  const $allCities = $('.city-list').find('li input:checkbox');
+  const $allStates = $('div.locations').find('h2 input:checkbox');
 
-  // Function to update the status of div#api_status based on the API response
+ // Function to update the status of div#api_status based on the API response
   function updateApiStatus () {
     // Make a GET request to the API endpoint
     $.get(
@@ -83,18 +88,48 @@ $(document).ready(function () {
 
     // Update the text inside the H4 tag with the list of selected amenities
     $('.amenities h4').text(Object.values(amenities).join(', '));
+  })
 
-	// Make new POST request to places_search list of selected filters
+    // states checkbox
+    $allStates.on('change', function () {
+    if ($(this).is(':checked')) {
+      // console.log($(this).data('id'), 'state');
+      stateIds[$(this).attr('data-id')] = $(this).attr('data-name');
+    } else if ($(this).not(':checked')) {
+      $(this).data('name').fadeOut();
+      delete stateIds[$(this).attr('data-id')];
+    }
+    if (Object.values(stateIds).length === 0) {
+      $('div.locations h4').html('&nbsp;');
+    } else {
+      $('div.locations h4').text(Object.values(stateIds).join(', '));
+    }
+    });
+
+    // cities checkbox
+    $allCities.on('change', function () {
+    if ($(this).is(':checked')) {
+      // console.log($(this).data('id'), 'city');
+      cityIds[$(this).attr('data-id')] = $(this).attr('data-name');
+    } else if ($(this).not(':checked')) {
+      delete cityIds[$(this).attr('data-id')];
+    }
+    if (Object.values(cityIds).length === 0) {
+      $('div.locations h4').html('&nbsp;');
+    } else {
+      $('div.locations h4').text(Object.values(cityIds).join(', '));
+    }
+    });
+	// Make new POST request to places_search with list of selected filters
         $.ajax({
             type: 'POST',
             url: 'http://' + window.location.hostname +
-                  ':5001/api/v1/places_search/',
+		  ':5001/api/v1/places_search/',
             contentType: 'application/json',
             data: JSON.stringify(selectedFilters),
             success: function (data) {
                 // Clear existing articles in the section.places
                 $('.places article').remove();
-                };
-          });
-  });
+		};
+	  });
 });
